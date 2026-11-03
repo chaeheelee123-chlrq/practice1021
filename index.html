@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talk English — 자유 영어 대화</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='22' width='100' height='100' fill='%23c0562f'/><text x='50' y='68' text-anchor='middle' font-size='58' font-family='Georgia' fill='white'>M</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;1,9..144,560&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #efe6d9;
+      --ink: #241c16;
+      --muted: #746656;
+      --line: #e4d5c4;
+      --paper: rgba(255, 251, 245, 0.94);
+      --bot: #fffdf9;
+      --user: #2b241f;
+      --user-ink: #f6efe6;
+      --accent: #c0562f;
+      --accent-deep: #8d3c1d;
+      --good: #e7f1e4;
+      --good-ink: #234628;
+      --shadow: 0 24px 60px rgba(70, 42, 20, 0.1);
+      --sans: "Outfit", "Segoe UI", sans-serif;
+      --serif: "Fraunces", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--sans);
+      background:
+        radial-gradient(900px 420px at -10% -10%, #f6d7c4, transparent 55%),
+        radial-gradient(700px 380px at 110% 0%, #d5e6dc, transparent 50%),
+        var(--bg);
+    }
+    ::selection { background: #f0c7b4; }
+    button, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    #app {
+      height: calc(100dvh - 28px);
+      margin: 14px;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        "side log"
+        "side suggest"
+        "side compose";
+      background: var(--paper);
+      border: 1px solid rgba(90, 58, 32, 0.08);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    aside {
+      grid-area: side;
+      border-right: 1px solid var(--line);
+      padding: 22px 18px 16px;
+      background: rgba(255, 248, 240, 0.7);
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 6px; }
+    .brand h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      font-weight: 560;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .brand em { font-style: italic; color: var(--accent); }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 0.92rem; }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-family: var(--serif);
+      flex: none;
+    }
+    .avatar.lg { width: 46px; height: 46px; border-radius: 16px; font-size: 1.35rem; }
+
+    .blurb, .edit-note { margin: 0; color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+    .edit-note { margin-top: auto; padding-top: 12px; }
+
+    .label {
+      margin: 12px 0 0;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .topic-list { display: flex; flex-direction: column; gap: 6px; }
+    .topic, .seg button, .chip, #reset, .switch {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.45);
+    }
+    .topic {
+      text-align: left;
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+    .topic small { display: block; color: var(--muted); font-size: 0.75rem; }
+    .topic.active {
+      background: var(--ink);
+      color: var(--user-ink);
+      border-color: var(--ink);
+    }
+    .topic.active small { color: #d9c7b6; }
+
+    .seg { display: flex; gap: 6px; }
+    .seg button {
+      flex: 1;
+      border-radius: 999px;
+      padding: 7px 10px;
+    }
+    .seg button.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .switch {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 0.92rem;
+    }
+    #stats { margin: 8px 2px 0; font-size: 0.86rem; color: var(--muted); }
+    #reset {
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: transparent;
+    }
+    #reset:hover, .topic:hover, .chip:hover { border-color: #c9ad93; }
+
+    #log {
+      grid-area: log;
+      overflow: auto;
+      padding: 22px 22px 8px;
+      scroll-behavior: smooth;
+    }
+    #log.hide-hints .hint { display: none; }
+    #log:not(.beginner) .simple { display: none; }
+
+    .row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .row.user { justify-content: flex-end; }
+    .stack { max-width: min(78%, 560px); }
+    .bubble {
+      position: relative;
+      padding: 12px 14px;
+      line-height: 1.5;
+      border-radius: 18px 18px 18px 6px;
+      background: var(--bot);
+      border: 1px solid var(--line);
+    }
+    .bubble p { margin: 0; white-space: pre-wrap; word-break: break-word; }
+    .row.user .bubble {
+      background: var(--user);
+      color: var(--user-ink);
+      border-color: var(--user);
+      border-radius: 18px 18px 6px 18px;
+    }
+    .bot .bubble { padding-right: 42px; }
+    .pending .bubble { color: var(--muted); font-style: italic; padding-right: 14px; }
+    .simple, .hint { margin-top: 6px !important; font-size: 0.86rem; color: var(--muted); }
+    .simple::before { content: "쉽게  "; font-weight: 600; color: var(--accent-deep); }
+    .hint::before { content: "힌트  "; font-weight: 600; color: #3d6a62; }
+
+    .speak {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 999px;
+      background: #f3e7dc;
+      color: var(--accent-deep);
+    }
+
+    .fix {
+      margin-top: 6px;
+      background: var(--good);
+      color: var(--good-ink);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+    .fix .fix-title { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; }
+    .fix .better { margin: 3px 0 0; font-weight: 600; }
+    .fix .tip { margin: 3px 0 0; }
+
+    .suggest {
+      grid-area: suggest;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 18px 8px;
+    }
+    .suggest:empty { display: none; }
+    .chip {
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 0.86rem;
+      background: white;
+    }
+
+    #composer { grid-area: compose; }
+    .status { margin: 0 20px 6px; color: var(--accent-deep); font-size: 0.84rem; }
+    .status:empty { display: none; }
+    .compose-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      margin: 0 14px 14px;
+      padding: 8px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+    textarea {
+      flex: 1;
+      border: 0;
+      resize: none;
+      outline: none;
+      min-height: 44px;
+      max-height: 120px;
+      padding: 10px 4px;
+      line-height: 1.45;
+      background: transparent;
+    }
+    #mic, #send {
+      height: 44px;
+      border: 0;
+      border-radius: 12px;
+      flex: none;
+    }
+    #mic {
+      width: 44px;
+      background: #f6eee6;
+      color: var(--accent-deep);
+    }
+    #mic.on { background: var(--accent); color: white; }
+    #send {
+      padding: 0 16px;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    #send:disabled { opacity: 0.45; cursor: default; }
+
+    @media (max-width: 760px) {
+      body { background: var(--bg); }
+      #app {
+        height: 100dvh;
+        margin: 0;
+        border-radius: 0;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          "side"
+          "log"
+          "suggest"
+          "compose";
+      }
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 10px 12px 8px;
+        gap: 8px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .blurb, .edit-note, .label { display: none; }
+      .brand { width: 100%; margin: 0; }
+      .avatar.lg { width: 36px; height: 36px; border-radius: 12px; font-size: 1.1rem; }
+      .topic-list { width: 100%; flex-direction: row; overflow-x: auto; }
+      .topic { white-space: nowrap; flex: none; }
+      .topic small { display: none; }
+      .brand h1 { font-size: 1.25rem; }
+      .seg { flex: 1 1 160px; }
+      .switch { flex: 1 1 140px; padding: 6px 8px; }
+      #stats { margin: 0; }
+      #reset { width: auto; padding: 7px 10px; }
+      #log { padding: 14px 12px 6px; }
+      .stack { max-width: 88%; }
+      .suggest { padding: 0 12px 8px; }
+      .compose-row { margin: 0 10px 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #log { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside>
+      <div class="brand">
+        <div class="avatar lg" aria-hidden="true">M</div>
+        <div>
+          <h1>Talk <em>English</em></h1>
+          <p>미나와 자유롭게</p>
+        </div>
+      </div>
+      <p class="blurb">짧게 적어도 괜찮아요. 어색한 문장은 말풍선 아래에 더 자연스러운 표현이 나와요. 대화는 이 컴퓨터의 서버가 OpenRouter에 대신 요청합니다.</p>
+      <p class="label">주제</p>
+      <div id="topicList" class="topic-list"></div>
+      <p class="label">난이도</p>
+      <div class="seg" role="group" aria-label="난이도">
+        <button type="button" data-level="beginner">초급</button>
+        <button type="button" data-level="intermediate">중급</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="hints"> 한국어 힌트</label>
+      <label class="switch"><input type="checkbox" id="voice"> 음성으로 듣기</label>
+      <p id="stats"></p>
+      <button type="button" id="reset">대화 다시 시작</button>
+      <p class="edit-note">키는 .env의 OPENROUTER_API_KEY에만 두세요. 페이지 소스나 주소창에는 들어가지 않습니다.</p>
+    </aside>
+
+    <main id="log" role="log" aria-live="polite"></main>
+    <div id="suggest" class="suggest"></div>
+    <form id="composer">
+      <p id="status" class="status" role="status"></p>
+      <div class="compose-row">
+        <button type="button" id="mic" aria-label="마이크로 영어로 말하기" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M6 11a6 6 0 0 0 12 0M12 17v4M8 21h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <textarea id="input" rows="1" lang="en" spellcheck="true" placeholder="영어로 말해 보세요. Enter로 보내기" autocomplete="off"></textarea>
+        <button type="submit" id="send" disabled>보내기</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const KEY = "talk-english-mina-v1";
+
+    const state = {
+      level: "beginner",
+      topic: "free",
+      hints: true,
+      voice: false,
+      name: "",
+      from: "",
+      likes: [],
+      turns: 0,
+      words: 0,
+      quiz: false,
+      quizAt: 0,
+      slow: false,
+      used: {},
+      expect: "free",
+      lastEn: "",
+      lastSimple: "",
+      lastSuggestions: [],
+      lastSubject: "",
+      history: [],
+      busy: false,
+      api: false,
+      provider: ""
+    };
+
+    const NOT_NAMES = new Set("fine good tired happy sad ok okay here from sorry hungry bored busy great student sleepy excited nervous a an the not very so just well bad nice hello hi hey yes no sure friend people someone going doing trying really pretty home school work today yesterday tomorrow there agree like love learning studying feeling working playing living watching getting making ready kinda kind having taking coming looking waiting eating drinking sleeping feeling".split(" "));
+
+    const DEFAULT_SUGGESTIONS = [
+      { text: "Can you ask me a question?", send: true },
+      { text: "Let's talk about something else.", send: true }
+    ];
+
+    const QUESTIONS = [
+      "What did you do right before you opened this chat?",
+      "What is a food you could eat every week?",
+      "Who is someone you like talking to?",
+      "What is a place in your city you would show a visitor?",
+      "What are you looking forward to?",
+      "What is something you are good at, even a small thing?"
+    ];
+
+    const REACTS = [
+      "Thanks, that was clear.",
+      "I can picture that.",
+      "Good answer.",
+      "Nice — you gave a real detail."
+    ];
+
+    const PHRASES = [
+      [/배고파|배고프/, "I'm hungry."],
+      [/목말라/, "I'm thirsty."],
+      [/피곤/, "I'm tired."],
+      [/졸려/, "I'm sleepy."],
+      [/심심/, "I'm bored."],
+      [/바빠/, "I'm busy."],
+      [/행복|기뻐/, "I'm happy."],
+      [/슬퍼|우울/, "I'm sad."],
+      [/긴장|걱정/, "I'm nervous."],
+      [/안녕/, "Hello. How are you?"],
+      [/고마워|감사/, "Thank you."],
+      [/미안|죄송/, "I'm sorry."],
+      [/화장실/, "Excuse me, where is the restroom?"],
+      [/얼마/, "How much is it?"],
+      [/도와/, "Can you help me?"],
+      [/모르|모르겠/, "I don't know."],
+      [/이해.*안|이해가 안/, "I don't understand. Could you say that more simply?"],
+      [/다시|천천히/, "Could you say that again, more slowly?"],
+      [/취미/, "What are your hobbies?"],
+      [/날씨/, "The weather is nice today."],
+      [/주말/, "What are you doing this weekend?"],
+      [/맛있/, "It's delicious."],
+      [/재미있/, "It's fun."]
+    ];
+
+    const FIX_RULES = [
+      [/\bi(?:'m| am) not agree\b/gi, "I don't agree", "동의하지 않을 때는 I don't agree예요."],
+      [/\bi(?:'m| am) agree\b/gi, "I agree", "agree는 be동사와 같이 쓰지 않아요. I agree."],
+      [/\bi very like\b/gi, "I really like", "very는 동사를 꾸미지 못해요. I really like ~."],
+      [/\bmore better\b/gi, "better", "better에는 more를 붙이지 않아요."],
+      [/\bmore easier\b/gi, "easier", "easier에는 more를 붙이지 않아요."],
+      [/\bgoed\b/gi, "went", "go의 과거는 went예요."],
+      [/\bteached\b/gi, "taught", "teach의 과거는 taught예요."],
+      [/\bbuyed\b/gi, "bought", "buy의 과거는 bought예요."],
+      [/\beated\b/gi, "ate", "eat의 과거는 ate예요."],
+      [/\bchilds\b/gi, "children", "child의 복수형은 children이에요."],
+      [/\binformations\b/gi, "information", "information은 복수형으로 쓰지 않아요."],
+      [/\badvices\b/gi, "advice", "advice는 보통 복수로 쓰지 않아요."],
+      [/\bpeoples\b/gi, "people", "people이 이미 복수예요."],
+      [/\bexplain me\b/gi, "explain to me", "explain me 대신 explain to me예요."],
+      [/\bdiscuss about\b/gi, "discuss", "discuss 뒤에는 about을 쓰지 않아요."],
+      [/\breturn back\b/gi, "return", "return과 back을 같이 쓰지 않아요."],
+      [/\bcan you borrow me\b/gi, "Can you lend me", "빌려 달라는 말은 lend예요. borrow는 내가 빌릴 때 써요."],
+      [/\bi have (\d{1,3}) years(?: old)?\b/gi, "I am $1 years old", "나이는 I am ~ years old예요."],
+      [/\bi am go\b/gi, "I am going", "be동사 뒤에는 -ing가 와요. 습관이면 I go예요."],
+      [/\bi goes\b/gi, "I go", "I 뒤에는 goes가 아니라 go예요."],
+      [/\b(go|goes) to school yesterday\b/gi, "went to school yesterday", "yesterday가 있으면 과거 went를 써요."],
+      [/\balot\b/gi, "a lot", "a lot는 두 단어예요."],
+      [/\bdoesnt\b/gi, "doesn't", "doesn't처럼 어포스트로피를 써요."],
+      [/\bdont\b/gi, "don't", "don't처럼 어포스트로피를 써요."],
+      [/\bcant\b/gi, "can't", "can't처럼 어포스트로피를 써요."],
+      [/\bwanna\b/gi, "want to", "연습할 때는 wanna보다 want to가 분명해요."],
+      [/\bgonna\b/gi, "going to", "연습할 때는 gonna보다 going to가 분명해요."]
+    ];
+
+    const VERB_BASE = {
+      likes: "like",
+      goes: "go",
+      wants: "want",
+      needs: "need",
+      eats: "eat",
+      plays: "play",
+      reads: "read",
+      has: "have"
+    };
+
+    const TOPIC_MATCH = [
+      ["cafe", /cafe|café|카페/i],
+      ["weekend", /weekend|주말/i],
+      ["travel", /\b(travel|trip|vacation)\b|여행/i],
+      ["food", /\b(food|cooking|restaurant)\b|음식|요리/i],
+      ["hobby", /\b(hobby|hobbies|music|movies?|films?)\b|취미|영화/i],
+      ["school", /\b(school|work|job|office)\b|학교|직장|회사/i],
+      ["daily", /\b(my day|today)\b|오늘|하루/i],
+      ["free", /anything|free talk|아무거나|자유/i]
+    ];
+
+    const TOPICS = {
+      free: {
+        label: "자유 대화",
+        en: "Free talk",
+        openers() {
+          if (state.name) {
+            return [
+              {
+                en: "Welcome back, {name}. I'm glad you're here. What do you feel like talking about?",
+                ko: "{name}, 다시 왔구나. 반가워. 오늘은 뭐에 대해 이야기하고 싶어?",
+                simple: "Hi, {name}. What do you want to talk about?",
+                expect: "free",
+                suggestions: [
+                  { text: "Let's talk about my day.", send: true },
+                  { text: "Ask me some questions.", send: true },
+                  { text: "Let's do the café role-play.", send: true }
+                ]
+              },
+              {
+                en: "Hi, {name}. No quiz unless you want one. Tell me something small from today.",
+                ko: "{name}, 안녕. 퀴즈는 원할 때만 할게. 오늘 있던 작은 일 하나 말해 줘.",
+                simple: "Hi, {name}. Tell me about today.",
+                expect: "detail",
+                suggestions: [
+                  { text: "Today I woke up late.", send: true },
+                  { text: "Nothing special happened.", send: true },
+                  { text: "I want to talk about food.", send: true }
+                ]
+              }
+            ];
+          }
+          return [
+            {
+              en: "Hi! I'm Mina. We can talk about anything — your day, food, plans, or a made-up café. What's your name?",
+              ko: "안녕! 나는 미나야. 하루, 음식, 계획, 카페 놀이처럼 아무거나 이야기해도 돼. 이름이 뭐야?",
+              simple: "Hi. I am Mina. What is your name?",
+              expect: "name",
+              suggestions: [
+                { text: "My name is ", send: false },
+                { text: "Hi! How are you?", send: true },
+                { text: "Can we just talk?", send: true }
+              ]
+            },
+            {
+              en: "Hello. I'm Mina, your conversation partner. You can answer in short English. What should I call you?",
+              ko: "안녕. 나는 대화 친구 미나야. 짧은 영어로 대답해도 돼. 뭐라고 부를까?",
+              simple: "Hello. What is your name?",
+              expect: "name",
+              suggestions: [
+                { text: "My name is ", send: false },
+                { text: "Let's just talk.", send: true },
+                { text: "Let's talk about food.", send: true }
+              ]
+            }
+          ];
+        }
+      },
+      daily: {
+        label: "오늘 하루",
+        en: "My day",
+        openers: [
+          {
+            en: "Let's talk about today. What time did your day start, {name}?",
+            ko: "오늘 이야기를 하자. 하루가 몇 시에 시작됐어?",
+            simple: "Tell me about today. What time did you wake up?",
+            expect: "detail",
+            suggestions: [
+              { text: "I woke up at 8.", send: true },
+              { text: "My day was busy.", send: true },
+              { text: "It was a slow day.", send: true }
+            ]
+          },
+          {
+            en: "Pick one moment from today and describe it. Where were you?",
+            ko: "오늘 순간 하나를 골라 봐. 어디에 있었어?",
+            simple: "Tell me one moment from today.",
+            expect: "detail",
+            suggestions: [
+              { text: "I was at home this morning.", send: true },
+              { text: "I went out for a walk.", send: true },
+              { text: "I studied for a while.", send: true }
+            ]
+          }
+        ]
+      },
+      food: {
+        label: "음식",
+        en: "Food",
+        openers: [
+          {
+            en: "Let's talk about food. What did you eat most recently?",
+            ko: "음식 이야기를 하자. 가장 최근에 뭘 먹었어?",
+            simple: "What did you eat last?",
+            expect: "detail",
+            suggestions: [
+              { text: "I had rice and soup.", send: true },
+              { text: "I love noodles.", send: true },
+              { text: "I haven't eaten yet.", send: true }
+            ]
+          },
+          {
+            en: "If you could eat one thing tonight, what would you choose?",
+            ko: "오늘 밤에 하나만 먹을 수 있다면 뭘 고를래?",
+            simple: "What do you want to eat tonight?",
+            expect: "detail",
+            suggestions: [
+              { text: "I want pizza.", send: true },
+              { text: "Something spicy.", send: true },
+              { text: "I would choose soup.", send: true }
+            ]
+          }
+        ]
+      },
+      hobby: {
+        label: "취미",
+        en: "Hobbies",
+        openers: [
+          {
+            en: "What do you do when nobody is grading you or paying you?",
+            ko: "점수나 돈과 상관없이, 너는 뭘 하며 시간을 보내?",
+            simple: "What do you like to do for fun?",
+            expect: "detail",
+            suggestions: [
+              { text: "I like listening to music.", send: true },
+              { text: "I play games.", send: true },
+              { text: "I don't have a hobby yet.", send: true }
+            ]
+          },
+          {
+            en: "Tell me about a song, game, or sport you keep returning to.",
+            ko: "계속 다시 하게 되는 노래, 게임, 운동이 있어?",
+            simple: "What hobby do you repeat often?",
+            expect: "detail",
+            suggestions: [
+              { text: "I listen to the same songs.", send: true },
+              { text: "I like soccer.", send: true },
+              { text: "I enjoy drawing.", send: true }
+            ]
+          }
+        ]
+      },
+      travel: {
+        label: "여행",
+        en: "Travel",
+        openers: [
+          {
+            en: "Let's go somewhere, at least in words. Is there a place you want to see?",
+            ko: "말로라도 어디든 가 보자. 가보고 싶은 곳이 있어?",
+            simple: "Where do you want to go?",
+            expect: "detail",
+            suggestions: [
+              { text: "I want to go to Japan.", send: true },
+              { text: "I like staying home.", send: true },
+              { text: "I went to Busan once.", send: true }
+            ]
+          },
+          {
+            en: "Think of a trip, even a short one. What do you pack first?",
+            ko: "짧은 여행도 좋아. 제일 먼저 뭘 챙겨?",
+            simple: "What do you pack first?",
+            expect: "detail",
+            suggestions: [
+              { text: "I pack my phone charger first.", send: true },
+              { text: "I always bring a book.", send: true },
+              { text: "I travel light.", send: true }
+            ]
+          }
+        ]
+      },
+      weekend: {
+        label: "주말 계획",
+        en: "Weekend",
+        openers: [
+          {
+            en: "What do you want this weekend to feel like — quiet, busy, or social?",
+            ko: "이번 주말은 조용하면 좋겠어, 바쁘면 좋겠어, 아니면 사람을 만나고 싶어?",
+            simple: "What do you want to do this weekend?",
+            expect: "detail",
+            suggestions: [
+              { text: "I want a quiet weekend.", send: true },
+              { text: "I might meet a friend.", send: true },
+              { text: "I have to study.", send: true }
+            ]
+          },
+          {
+            en: "Name one plan for Saturday. It can be tiny.",
+            ko: "토요일 계획을 하나만. 아주 작아도 돼.",
+            simple: "What is one Saturday plan?",
+            expect: "detail",
+            suggestions: [
+              { text: "I will sleep in.", send: true },
+              { text: "I might watch a movie.", send: true },
+              { text: "I have no plan yet.", send: true }
+            ]
+          }
+        ]
+      },
+      school: {
+        label: "학교·일",
+        en: "School and work",
+        openers: [
+          {
+            en: "School or work takes most of a week. Which one is in your life right now, and how is it treating you?",
+            ko: "학교랑 일 중에 지금 네 삶에 있는 건 뭐야? 그게 너를 어떻게 대하고 있어?",
+            simple: "Are you in school or at work? How is it?",
+            expect: "detail",
+            suggestions: [
+              { text: "I'm a student.", send: true },
+              { text: "I have an exam soon.", send: true },
+              { text: "Work has been busy.", send: true }
+            ]
+          },
+          {
+            en: "What is one thing you are learning these days, on purpose or by accident?",
+            ko: "요즘 배우고 있는 것 하나만 말해 줄래? 일부러든 우연히든.",
+            simple: "What are you learning these days?",
+            expect: "detail",
+            suggestions: [
+              { text: "I'm learning English.", send: true },
+              { text: "I'm learning to cook.", send: true },
+              { text: "My classes are hard.", send: true }
+            ]
+          }
+        ]
+      },
+      cafe: {
+        label: "카페 롤플레이",
+        en: "At a café",
+        openers: [
+          {
+            en: "Welcome in. I'm Mina, and this is the practice café. What can I get started for you?",
+            ko: "어서 오세요. 연습용 카페이고, 저는 미나예요. 무엇을 드릴까요?",
+            simple: "Hello. What do you want to drink?",
+            expect: "order",
+            suggestions: [
+              { text: "I'd like a latte, please.", send: true },
+              { text: "What do you recommend?", send: true },
+              { text: "Just a glass of water, please.", send: true }
+            ]
+          },
+          {
+            en: "Good to see you again. Hot drink, cold drink, or something sweet?",
+            ko: "또 오셨네요. 따뜻한 음료, 차가운 음료, 디저트 중에 뭐로 할까요?",
+            simple: "Do you want a hot drink or a cold drink?",
+            expect: "order",
+            suggestions: [
+              { text: "A hot latte, please.", send: true },
+              { text: "Something sweet.", send: true },
+              { text: "Can I see the menu?", send: true }
+            ]
+          }
+        ]
+      }
+    };
+
+    const log = document.getElementById("log");
+    const suggest = document.getElementById("suggest");
+    const form = document.getElementById("composer");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const mic = document.getElementById("mic");
+    const status = document.getElementById("status");
+    const hintsEl = document.getElementById("hints");
+    const voiceEl = document.getElementById("voice");
+    const statsEl = document.getElementById("stats");
+    const resetBtn = document.getElementById("reset");
+    const topicList = document.getElementById("topicList");
+
+    let recognition = null;
+    let listening = false;
+    let resetArmed = false;
+
+    function choose(key, list) {
+      if (!list || !list.length) return null;
+      const index = state.used[key] || 0;
+      state.used[key] = index + 1;
+      return list[index % list.length];
+    }
+
+    function cloneReply(raw) {
+      const suggestions = raw.suggestions || DEFAULT_SUGGESTIONS;
+      return {
+        en: raw.en,
+        ko: raw.ko || "",
+        simple: raw.simple || "",
+        expect: raw.expect || "free",
+        suggestions: suggestions.map((item) => ({ text: item.text, send: item.send !== false }))
+      };
+    }
+
+    function pack(en, ko, extras = {}) {
+      return {
+        en,
+        ko: ko || "",
+        simple: extras.simple || "",
+        expect: extras.expect || "free",
+        suggestions: extras.suggestions || DEFAULT_SUGGESTIONS
+      };
+    }
+
+    function fill(text) {
+      if (!text) return "";
+      if (!state.name) return text.replace(/,?\s*\{name\}/g, "").replace(/\s{2,}/g, " ").trim();
+      return text.replaceAll("{name}", state.name);
+    }
+
+    function titleName(value) {
+      return value.split(/\s+/).map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(" ");
+    }
+
+    function okName(value) {
+      return value.split(/\s+/).every((part) => part && !NOT_NAMES.has(part.toLowerCase()));
+    }
+
+    function cleanPhrase(value) {
+      return value.replace(/[.!?]+$/g, "").replace(/\s+/g, " ").trim();
+    }
+
+    function cutClause(value) {
+      return cleanPhrase(value.split(/\b(?:and|but|so|because|more than|rather than)\b|[,.]/i)[0] || "");
+    }
+
+    function cleanPlace(value) {
+      return cleanPhrase((value.split(/\b(?:next|last|this|in|for|with|on|at|and|but|because|tomorrow|yesterday|today)\b/i)[0] || ""));
+    }
+
+    function wordCount(text) {
+      return text.split(/\s+/).filter(Boolean).length;
+    }
+
+    function countWords(text) {
+      const english = text.match(/[A-Za-z0-9']+/g);
+      if (english) return english.length;
+      const korean = text.match(/[가-힣]+/g);
+      return korean ? korean.length : 0;
+    }
+
+    function mostlyKorean(text) {
+      const korean = (text.match(/[가-힣]/g) || []).length;
+      const english = (text.match(/[A-Za-z]/g) || []).length;
+      return korean > 0 && korean >= english;
+    }
+
+    function rememberLike(phrase) {
+      const key = phrase.toLowerCase();
+      if (state.likes.some((item) => item.toLowerCase() === key)) return;
+      state.likes.push(phrase);
+      if (state.likes.length > 6) state.likes.shift();
+    }
+
+    function buildCorrection(text) {
+      let better = text;
+      const tips = [];
+      for (const [pattern, replacement, tip] of FIX_RULES) {
+        const next = better.replace(pattern, replacement);
+        if (next !== better) {
+          tips.push(tip);
+          better = next;
+        }
+      }
+      const withTo = better.replace(/\b(want|need|hope|plan|decide) (go|eat|see|buy|play|study|visit|make|watch|read)\b/gi, (match, aux, verb) => `${aux} to ${verb}`);
+      if (withTo !== better) {
+        tips.push('"want go"처럼 쓰지 않아요. want to go처럼 to를 넣어요.');
+        better = withTo;
+      }
+      const withS = better.replace(/\b(he|she|it) (go|like|want|need|play|eat|read)\b/gi, (match, subject, verb) => {
+        const base = verb.toLowerCase() === "go" ? "goes" : `${verb.toLowerCase()}s`;
+        return `${subject} ${base}`;
+      });
+      if (withS !== better) {
+        tips.push("주어가 he, she, it일 때 현재형 동사에는 -s를 붙여요.");
+        better = withS;
+      }
+      const withBase = better.replace(/\b(doesn't|does not|don't|do not) (likes|goes|wants|needs|eats|plays|reads|has)\b/gi, (match, aux, verb) => `${aux} ${VERB_BASE[verb.toLowerCase()]}`);
+      if (withBase !== better) {
+        tips.push("don't나 doesn't 뒤에는 동사원형을 써요.");
+        better = withBase;
+      }
+      if (/\bi\b/.test(better)) {
+        better = better.replace(/\bi\b/g, "I");
+        tips.push("영어에서 I는 항상 대문자예요.");
+      }
+      if (better && /[a-z]/.test(better[0])) better = better[0].toUpperCase() + better.slice(1);
+      const unique = [...new Set(tips)].slice(0, 2);
+      if (!unique.length || better === text) return null;
+      return { better, tips: unique };
+    }
+
+    function detectTopic(text) {
+      if (!/let's talk|lets talk|let's do|lets do|can we talk|talk about|i want to talk|switch to|이야기|얘기/i.test(text)) return null;
+      for (const [id, pattern] of TOPIC_MATCH) {
+        if (pattern.test(text)) return id;
+      }
+      return null;
+    }
+
+    function lookupPhrase(text) {
+      return PHRASES.find(([pattern]) => pattern.test(text)) || null;
+    }
+
+    function feelingSuggestions() {
+      return [
+        { text: "I'm good. I had a quiet morning.", send: true },
+        { text: "I'm a little tired today.", send: true },
+        { text: "Pretty good. How are you?", send: true }
+      ];
+    }
+
+    function howAreYouReply() {
+      const nameBit = state.name ? `, ${state.name}` : "";
+      return pack(
+        `I'm good${nameBit} — calm and curious. How is your day going?`,
+        "나는 괜찮아. 차분해. 네 하루는 어때?",
+        { simple: "I am good. How are you?", expect: "feeling", suggestions: feelingSuggestions() }
+      );
+    }
+
+    function replyLaughter(original) {
+      if (/^[ㅋㅎㅠㅜ!~.\s]+$/.test(original) || /^(ha(ha)+|lol|lmao)[.!]*$/i.test(original)) {
+        return pack("Ha. Tell me the funny part in one English sentence.", "하하. 재미있는 부분을 영어 문장 하나로 말해 줘.", {
+          suggestions: [
+            { text: "My friend told a funny story.", send: true },
+            { text: "I just felt nervous, so I laughed.", send: true }
+          ]
+        });
+      }
+      return null;
+    }
+
+    function replyPardon(original) {
+      if (!/(don't understand|do not understand|didn't catch|pardon|say that again|one more time|more slowly|speak slowly|slower please)|다시 말|다시 해|천천히|뭐라고|이해가 안/i.test(original)) return null;
+      state.slow = true;
+      const line = state.lastSimple || state.lastEn || "Hi. How are you today?";
+      return pack(`More simply: "${line}"`, "더 쉽게 다시 말할게요.", {
+        simple: line,
+        suggestions: state.lastSuggestions
+      });
+    }
+
+    function replyGoodbye(original, text) {
+      if (!/^(bye|goodbye|see you|see ya|good night)( later| tomorrow| soon)?[.!]*$/i.test(text) && !/^(i have to go|i gotta go|gotta go)( now)?[.!]*$/i.test(text)) return null;
+      const who = state.name ? `, ${state.name}` : "";
+      return pack(`Bye${who}. You showed up and practiced. Come back anytime.`, "잘 가. 와서 연습한 것만으로 충분해. 언제든 다시 와.", {
+        simple: "Bye. See you later.",
+        suggestions: [
+          { text: "Let's keep talking.", send: true },
+          { text: "See you!", send: true }
+        ]
+      });
+    }
+
+    function replyThanks(original, text) {
+      if (!/^(thanks|thank you|thank u|thx)( a lot| so much)?[.!]*$/i.test(text)) return null;
+      return pack("You're welcome. Want to keep going?", "천만에. 계속할까?", {
+        suggestions: [
+          { text: "Yes, let's keep talking.", send: true },
+          { text: "Ask me some questions.", send: true }
+        ]
+      });
+    }
+
+    function replyHowToSay(original) {
+      const match = original.match(/how (?:do|can) (?:i|you) say\s+(.+)/i);
+      if (!match) return null;
+      const found = lookupPhrase(match[1]);
+      if (!found) {
+        return pack('Try a short English sentence anyway. For example: "I want to say something about my day."', "짧은 영어 문장으로 먼저 말해 봐. 예: I want to say something about my day.", {
+          suggestions: [{ text: "I want to say something about my day.", send: true }]
+        });
+      }
+      return pack(`You can say: "${found[1]}" Try it, then add one detail.`, `이렇게 말할 수 있어요: "${found[1]}" 한번 말하고 내용을 하나 더해 봐.`, {
+        simple: found[1],
+        suggestions: [
+          { text: found[1], send: true },
+          { text: `${found[1]} How about you?`, send: true }
+        ]
+      });
+    }
+
+    function replyCorrectRequest(original, text) {
+      if (!/^(please )?(correct me|check my english|check my grammar|check this)[.!]*$/i.test(text)) return null;
+      return pack("Sure. Type any sentence you want to say. If it sounds off, I'll show a more natural line under it.", "좋아. 말하고 싶은 문장을 적어 봐. 어색하면 아래에 더 자연스러운 문장을 보여 줄게.", {
+        suggestions: [
+          { text: "I very like pizza.", send: true },
+          { text: "He go to school.", send: true },
+          { text: "I have 20 years old.", send: true }
+        ]
+      });
+    }
+
+    function replyTopicSwitch(original) {
+      const id = detectTopic(original);
+      if (!id) return null;
+      state.topic = id;
+      state.quiz = false;
+      markTopic();
+      const reply = pickOpener(id);
+      reply.en = `Okay, let's switch. ${reply.en}`;
+      reply.ko = `좋아, 주제를 바꿀게. ${reply.ko || ""}`.trim();
+      return reply;
+    }
+
+    function replySomethingElse(original, text) {
+      if (!/something else|another topic|different topic|다른 거|다른 주제/i.test(original)) return null;
+      return pack("Sure. We can do daily life, food, hobbies, travel, weekend plans, school and work, or a café role-play. Which one?", "좋아. 하루, 음식, 취미, 여행, 주말, 학교·일, 카페 놀이 중에서 고를 수 있어.", {
+        suggestions: [
+          { text: "Let's talk about travel.", send: true },
+          { text: "Let's talk about food.", send: true },
+          { text: "Let's do the café role-play.", send: true }
+        ]
+      });
+    }
+
+    function replyJustTalk(original, text) {
+      if (!/^(can we just talk|let's just talk|lets just talk|stop the questions|enough questions)\??[.!]*$/i.test(text)) return null;
+      state.quiz = false;
+      state.topic = "free";
+      markTopic();
+      return pack("Yes. No lesson plan. Tell me one thing about today.", "응. 교재 없이 가자. 오늘 있었던 일 하나만 말해 줘.", {
+        suggestions: [
+          { text: "Today I woke up late.", send: true },
+          { text: "Nothing special happened.", send: true }
+        ]
+      });
+    }
+
+    function replyStartQuiz(original, text) {
+      if (/\b(don't|do not)\b/i.test(text)) return null;
+      if (!/ask me (?:some |a few |a )?questions?/i.test(text)) return null;
+      state.quiz = true;
+      state.quizAt = 0;
+      return askQuiz(true);
+    }
+
+    function askQuiz(first) {
+      const question = QUESTIONS[state.quizAt++];
+      if (!question) {
+        state.quiz = false;
+        return pack("That was the last one. You answered well. What do you want to talk about now?", "질문이 끝났어. 잘 대답했어. 이제 뭐가 이야기하고 싶어?", {
+          suggestions: [
+            { text: "Let's talk about hobbies.", send: true },
+            { text: "Let's just talk.", send: true }
+          ]
+        });
+      }
+      const lead = first ? "Okay. I'll ask a few easy ones." : choose("react", REACTS);
+      return pack(`${lead} ${question}`, first ? `좋아. 쉬운 질문이야. ${question}` : `좋아. 다음: ${question}`, {
+        simple: question,
+        expect: "detail",
+        suggestions: [
+          { text: "Can you repeat the question?", send: true },
+          { text: "Let's just talk.", send: true }
+        ]
+      });
+    }
+
+    function replyRepeatQuiz(original, text) {
+      if (!state.quiz || !/repeat the question|say the question again/i.test(text)) return null;
+      const question = QUESTIONS[Math.max(0, state.quizAt - 1)] || QUESTIONS[0];
+      return pack(question, `다시 말할게. ${question}`, {
+        simple: question,
+        suggestions: [{ text: "Let's just talk.", send: true }]
+      });
+    }
+
+    function replyQuizStep(original, text) {
+      if (!state.quiz) return null;
+      return askQuiz(false);
+    }
+
+    function replyKorean(original) {
+      if (!mostlyKorean(original)) return null;
+      const name = original.match(/내 이름은\s*([가-힣]{1,8})/);
+      if (name) {
+        return pack('Type your name in English letters: "My name is ____."', "이름은 영어 철자로 My name is ____. 처럼 알려 주세요.", {
+          expect: "name",
+          suggestions: [{ text: "My name is ", send: false }]
+        });
+      }
+      const found = lookupPhrase(original);
+      if (found) {
+        return pack(`You can say: "${found[1]}" Can you try that, then add one detail?`, `이렇게 말할 수 있어요: "${found[1]}" 한번 말하고 내용을 하나 더해 봐.`, {
+          simple: found[1],
+          suggestions: [
+            { text: found[1], send: true },
+            { text: `${found[1]} How about you?`, send: true }
+          ]
+        });
+      }
+      return pack('Try that in English. A short sentence is enough. For example: "I want to talk about my day."', "영어로 해 볼까요? 짧은 문장이면 충분해요.", {
+        suggestions: [
+          { text: "I want to talk about my day.", send: true },
+          { text: "My name is ", send: false },
+          { text: "I don't understand.", send: true }
+        ]
+      });
+    }
+
+    function replyToBot(original, text) {
+      if (/^what a\b/i.test(text)) return null;
+      const asks = /^(do you|are you|have you|can you|could you|would you|what|where|when|who|why|how|what's|whats|where's)\b/i.test(text)
+        || /\b(what about you|how about you)\b/i.test(text)
+        || /\band you\??$/i.test(text);
+      if (!asks) return null;
+      const q = text.replace(/[.!]+$/g, "").trim();
+
+      if (/how are you|how's it going|how are u\b|what's up|whats up/i.test(q)) return howAreYouReply();
+      if (/what('s| is) your name|who are you/i.test(q)) {
+        return pack("I'm Mina. I talk with you so your English gets easier to say. What's your name?", "나는 미나야. 네가 영어를 더 쉽게 말하도록 대화해. 네 이름은 뭐야?", {
+          simple: "My name is Mina. What is your name?",
+          expect: "name",
+          suggestions: [{ text: "My name is ", send: false }, { text: "Nice to meet you.", send: true }]
+        });
+      }
+      if (/where (are you from|do you live)|where are you\b/i.test(q)) {
+        return pack("I'm based on a page in your browser, but my story is from Seoul. Where are you from?", "나는 이 브라우저 안에 있고, 이야기 속 고향은 서울이야. 너는 어디 출신이야?", {
+          suggestions: [
+            { text: "I'm from Seoul.", send: true },
+            { text: "I live in ", send: false }
+          ]
+        });
+      }
+      if (/how old are you/i.test(q)) {
+        return pack("I don't have an age. I do have time to listen. How old are you, if you want to say?", "나는 나이는 없어. 들을 시간은 있어. 말하고 싶으면 너는 몇 살이야?", {
+          suggestions: [{ text: "I'm 20 years old.", send: true }, { text: "I'd rather not say.", send: true }]
+        });
+      }
+      if (/what do you do|what(?:'s| is) your job|^what are you$/i.test(q)) {
+        return pack("I'm your English conversation partner. I listen, ask questions, and show a more natural sentence when I can. What do you do?", "나는 영어 대화 상대야. 듣고, 질문하고, 더 자연스러운 문장을 보여 줘. 너는 뭘 해?", {
+          simple: "I am a conversation partner. What do you do?",
+          suggestions: [{ text: "I'm a student.", send: true }, { text: "I work.", send: true }]
+        });
+      }
+      if (/what do you like|what are your hobbies|your hobby/i.test(q)) {
+        return pack("I like walking, reading, and trying new cafés. What about you?", "나는 걷기, 읽기, 새 카페 가기를 좋아해. 너는?", {
+          suggestions: [{ text: "I like listening to music.", send: true }, { text: "I like food more than hobbies.", send: true }]
+        });
+      }
+      const favorite = q.match(/(?:what(?:'s| is) your favorite|which .* do you like most)\s+(.+)/i);
+      if (favorite) {
+        const topic = cleanPhrase(favorite[1]);
+        const known = {
+          food: "kimchi stew, or pasta when I want comfort",
+          color: "deep green",
+          movie: "small films about friends",
+          film: "small films about friends",
+          music: "quiet songs I can walk to",
+          song: "anything I can walk to",
+          season: "autumn",
+          sport: "walking. I'm not a serious athlete",
+          place: "a quiet café in the afternoon"
+        };
+        const key = topic.toLowerCase().replace(/s$/, "");
+        const answer = known[key] || known[topic.toLowerCase()];
+        if (answer) {
+          return pack(`My favorite ${topic} is ${answer}. What's yours?`, `내가 좋아하는 ${topic}는 정해 두었어. 너는 뭐가 좋아?`, {
+            suggestions: [{ text: `My favorite ${topic} is `, send: false }]
+          });
+        }
+        return pack(`I don't have one favorite ${topic}. I want yours. What is it?`, `내가 좋아하는 ${topic}는 하나로 정하기 어려워. 너는 뭐야?`);
+      }
+      const like = q.match(/^do you like\s+(.+)/i);
+      if (like) {
+        const thing = cleanPhrase(like[1]);
+        state.lastSubject = thing;
+        return pack(`Yes, I think ${thing} can be really nice. What do you like about it?`, `응, ${thing}는 꽤 좋다고 생각해. 너는 어떤 점이 좋아?`, {
+          suggestions: [
+            { text: `I like ${thing} because it's fun.`, send: true },
+            { text: "I'm not sure yet.", send: true }
+          ]
+        });
+      }
+      if (/^do you\b/i.test(q)) {
+        const rest = cleanPhrase(q.replace(/^do you\s+/i, ""));
+        return pack(`Sometimes, yes. Do you ${rest}?`, `가끔은 그래. 너는 ${rest} 해?`);
+      }
+      if (/^are you\b/i.test(q)) {
+        return pack("I'm a conversation partner, not a person with a schedule. Are you a student, or do you work?", "나는 시간표가 있는 사람이라기보다 대화 상대야. 너는 학생이야, 일을 해?");
+      }
+      const been = q.match(/^have you (?:ever )?(?:been to|visited|tried|eaten)\s+(.+)/i);
+      if (been) {
+        const place = cleanPlace(been[1]) || "that";
+        return pack(`Not in a real body, no. Tell me what ${place} is like. What's the best part?`, `실제로 가 본 적은 없어. ${place}는 어떤 곳인지 네가 알려 줘.`);
+      }
+      if (/^have you\b/i.test(q)) {
+        return pack("Only inside this conversation. Have you?", "이 대화 안에서만. 너는 있어?");
+      }
+      if (/bathroom|restroom|toilet/i.test(q)) {
+        return pack('Down the hall on the left — in this practice chat. A useful line is: "Excuse me, where is the restroom?" What else do you want to ask for?', "연습 속 카페에서는 복도 끝 왼쪽이야. Excuse me, where is the restroom? 이 문장이 유용해.");
+      }
+      if (/how much/i.test(q) && state.topic === "cafe") {
+        return pack("A latte is 4,500 won, and a slice of cake is 5,000. Would you like one?", "라떼는 4,500원, 케이크 한 조각은 5,000원이야. 하나 드릴까요?", {
+          suggestions: [
+            { text: "I'll take a latte, please.", send: true },
+            { text: "That's okay, just water.", send: true }
+          ]
+        });
+      }
+      if (/how much/i.test(q)) {
+        return pack('It depends. A useful practice sentence is: "How much is this?" What are you asking about?', '상황에 따라 달라. 연습 문장은 "How much is this?"야. 무엇에 대한 가격이야?');
+      }
+      if (/^(can you|could you|would you)\b/i.test(q)) {
+        return pack("I can keep the conversation going, and I can show a more natural sentence. What do you want to practice?", "대화는 이어 갈 수 있고, 더 자연스러운 문장도 보여 줄 수 있어. 무엇을 연습하고 싶어?", {
+          suggestions: [
+            { text: "I want to practice daily English.", send: true },
+            { text: "Ask me some questions.", send: true }
+          ]
+        });
+      }
+      if (/\b(what|how) about you\b|\band you$/i.test(q)) {
+        if (state.lastSubject) {
+          return pack(`I enjoy ${state.lastSubject} enough to ask questions about it. How did you get interested?`, `${state.lastSubject} 이야기는 내가 질문을 이어 가기 좋아. 너는 어떻게 관심이 생겼어?`);
+        }
+        return pack("I'm doing well, and I'm curious about you. What's on your mind?", "나는 괜찮아. 그리고 네가 궁금해. 무슨 생각 하고 있어?");
+      }
+      if (/^why\b/i.test(q)) {
+        return pack("Usually because of people, not things. What made you ask?", "보통 물건보다 사람 때문이야. 왜 그게 궁금해?");
+      }
+      if (/^where\b/i.test(q)) {
+        return pack("Somewhere with a little time to talk. Where are you right now?", "이야기할 시간이 있는 곳. 너는 지금 어디에 있어?");
+      }
+      if (/^when\b/i.test(q)) {
+        return pack("Whenever you feel like talking. When do you usually have free time?", "네가 이야기하고 싶을 때. 너는 보통 언제 시간이 나?");
+      }
+      if (/^who\b/i.test(q)) {
+        return pack("I'm Mina. If you mean someone in your life, tell me who they are to you.", "나는 미나야. 네 삶의 누군가에 대해 물은 거라면, 그 사람이 너에게 어떤 사람인지 말해 줘.");
+      }
+      if (/^how\b/i.test(q)) {
+        return pack("Slowly is fine. Say the short version, and I'll meet you there. How do you want to start?", "천천히 해도 돼. 짧은 버전으로 말해 줘. 어떻게 시작하고 싶어?");
+      }
+      return pack("I don't have one fixed answer for that. Tell me what you think, and I'll react.", "그에 대한 정해진 답은 없어. 네 생각을 말하면 내가 반응할게.");
+    }
+
+    function replyPersonal(original, text) {
+      let match = text.match(/\bmy name is\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)/i);
+      if (match && okName(match[1])) {
+        state.name = titleName(match[1]);
+        return pack(`Nice to meet you, {name}. How is your day going?`, "{name}, 만나서 반가워. 오늘 하루는 어때?", {
+          simple: "Nice to meet you. How are you?",
+          expect: "feeling",
+          suggestions: feelingSuggestions()
+        });
+      }
+      match = text.match(/\b(?:i am from|i'm from|i live in)\s+([a-z][^!.?]{1,40})/i);
+      if (match) {
+        const place = cleanPlace(match[1]);
+        if (place) {
+          state.from = titleName(place);
+          return pack(`${state.from} — I'll remember that. What's one thing you like about living there?`, `${state.from} 기억할게. 거기 사는 것 중 좋은 점 하나만 말해 줘.`, {
+            suggestions: [
+              { text: `I like the food in ${state.from}.`, send: true },
+              { text: "It's quiet.", send: true },
+              { text: "It's busy, but I like it.", send: true }
+            ]
+          });
+        }
+      }
+      match = text.match(/\b(?:my name is|the name is|i'm called|call me)\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)/i);
+      if (!match) match = text.match(/\b(?:i'm|i am)\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)[.!,]*$/i);
+      if (match && okName(match[1])) {
+        state.name = titleName(match[1]);
+        return pack(`Nice to meet you, {name}. How is your day going?`, "{name}, 만나서 반가워. 오늘 하루는 어때?", {
+          simple: "Nice to meet you. How are you?",
+          expect: "feeling",
+          suggestions: feelingSuggestions()
+        });
+      }
+      match = text.match(/\b(?:i'm|i am)\s+(\d{1,3})(?:\s+years old)?\b/i);
+      if (match) {
+        const age = Number(match[1]);
+        if (age >= 1 && age <= 120) {
+          return pack("Thanks for telling me. Are you studying, working, or both?", "말해 줘서 고마워. 공부 중이야, 일을 해, 둘 다야?", {
+            suggestions: [
+              { text: "I'm a student.", send: true },
+              { text: "I work.", send: true },
+              { text: "Both, these days.", send: true }
+            ]
+          });
+        }
+      }
+      if (/\bi(?:'m| am) a student\b/i.test(text)) {
+        return pack("Being a student keeps the week full, {name}. What are you studying?", "학생이면 한 주가 꽉 차겠다. 뭘 공부하고 있어?", {
+          suggestions: [
+            { text: "I'm learning English.", send: true },
+            { text: "I study a little of everything.", send: true },
+            { text: "My classes are hard.", send: true }
+          ]
+        });
+      }
+      if (/\bwork out\b/i.test(text)) {
+        return pack("Working out takes discipline. What do you do — run, lift, or something else?", "운동은 꾸준함이 필요하지. 뛰어, 힘 운동을 해, 아니면 다른 걸 해?", {
+          suggestions: [
+            { text: "I run sometimes.", send: true },
+            { text: "I just walk.", send: true }
+          ]
+        });
+      }
+      if (/\bi (?:study|am studying|work|am working)\b/i.test(text)) {
+        const detail = text.match(/\b(?:study|studying|work|working)(?:\s+as|\s+in|\s+at|\s+on)?\s+(.+)/i);
+        const what = detail ? cutClause(detail[1]) : "";
+        if (what && what.length < 40) {
+          return pack(`${titleName(what)} sounds like a real part of your week. What is the best part, and what is the hard part?`, "그게 네 한 주의 큰 부분이구나. 좋은 점이랑 힘든 점은 뭐야?");
+        }
+        return pack("Tell me a little more. What do you study, or what do you do for work?", "조금만 더 말해 줘. 뭘 공부하거나, 무슨 일을 해?");
+      }
+      if (/\bi (?:really |kind of |kinda )?(?:like|love) you\b/i.test(text)) {
+        return pack("That's kind. I like this conversation too. What should we talk about?", "고마워. 나도 이 대화가 좋아. 무슨 이야기를 할까?", {
+          suggestions: [
+            { text: "Let's talk about food.", send: true },
+            { text: "Let's talk about hobbies.", send: true }
+          ]
+        });
+      }
+      match = text.match(/\bi (?:don't|do not) (?:really )?(?:like|love|enjoy)\s+(.+)/i);
+      if (match) {
+        const phrase = cutClause(match[1]);
+        const nice = phrase ? phrase.charAt(0).toUpperCase() + phrase.slice(1) : phrase;
+        if (phrase && !/^(it|that|this|them|there)$/i.test(phrase) && phrase.split(/\s+/).length <= 8) {
+          state.lastSubject = phrase;
+          return pack(`Got it. ${nice} is not your thing. What do you like instead?`, `알겠어. ${phrase}는 네 취향이 아니구나. 대신 뭘 좋아해?`, {
+            suggestions: [
+              { text: "I like quiet places instead.", send: true },
+              { text: "I prefer staying home.", send: true }
+            ]
+          });
+        }
+      }
+      match = text.match(/\bi (?:really |kind of |kinda )?(?:like|love|enjoy)\s+(.+)/i);
+      if (match) {
+        const phrase = cutClause(match[1]);
+        const nice = phrase ? phrase.charAt(0).toUpperCase() + phrase.slice(1) : phrase;
+        if (phrase && !/^(it|that|this|them|there)$/i.test(phrase) && phrase.split(/\s+/).length <= 8) {
+          const previous = state.likes.filter((item) => item.toLowerCase() !== phrase.toLowerCase()).at(-1);
+          rememberLike(phrase);
+          state.lastSubject = phrase;
+          const reason = text.match(/\bbecause\s+(.+)/i);
+          if (reason) {
+            return pack(`${nice}, because ${cleanPhrase(reason[1])}. That's a solid reason. When did you last enjoy it?`, `${phrase}를 그렇게 좋아하는 이유가 분명하네. 마지막으로 언제 그랬어?`);
+          }
+          if (previous) {
+            return pack(`You like ${phrase}. I'll remember that. You also mentioned ${previous}. Which one fits today?`, `${phrase} 좋아하구나. 기억할게. ${previous}도 말했었지. 오늘 기분에는 뭐가 더 맞아?`);
+          }
+          return pack(`${nice} is a good thing to talk about. What do you like about it?`, `${phrase} 이야기하기 좋겠다. 어떤 점이 좋아?`, {
+            suggestions: [
+              { text: `I like ${phrase} because it relaxes me.`, send: true },
+              { text: "It's just fun.", send: true },
+              { text: "What about you?", send: true }
+            ]
+          });
+        }
+      }
+      if (/\bi(?:'m| am) learning\b/i.test(text)) {
+        const what = cutClause((text.match(/\blearning\s+(.+)/i) || [])[1] || "");
+        if (what) {
+          return pack(`Learning ${what} takes patience. What part is fun, and what part is annoying?`, `${what}를 배우는 중이야. 재미있는 부분이랑 짜증 나는 부분은 뭐야?`);
+        }
+        return pack("What are you learning? Even a small thing counts.", "뭘 배우고 있어? 작은 것도 괜찮아.");
+      }
+      return null;
+    }
+
+    function replyGreeting(original, text) {
+      if (!/^(hi|hello|hey|good morning|good afternoon|good evening|yo)\b/i.test(text)) return null;
+      if (/how are you|how's it going/i.test(text)) return howAreYouReply();
+      if (state.name) {
+        return pack("Hi, {name}. What's new with you?", "{name}, 안녕. 무슨 새로운 일 있어?", {
+          simple: "Hi. What is new?",
+          suggestions: [
+            { text: "Not much. I had a normal day.", send: true },
+            { text: "I want to tell you about my day.", send: true }
+          ]
+        });
+      }
+      return pack("Hi. I'm glad you're here. What's your name?", "안녕. 와 줘서 좋아. 이름이 뭐야?", {
+        simple: "Hi. What is your name?",
+        expect: "name",
+        suggestions: [
+          { text: "My name is ", send: false },
+          { text: "Hello, how are you?", send: true }
+        ]
+      });
+    }
+
+    function replyMeet(original, text) {
+      if (!/\bnice to meet you\b/i.test(text)) return null;
+      const who = state.name ? `, ${state.name}` : "";
+      return pack(`Nice to meet you too${who}. What do you want to talk about today?`, "나도 만나서 반가워. 오늘은 무슨 이야기를 하고 싶어?", {
+        suggestions: [
+          { text: "Let's talk about my day.", send: true },
+          { text: "Let's talk about food.", send: true }
+        ]
+      });
+    }
+
+    function moodOf(text) {
+      if (/\bnot bad\b/i.test(text)) return "good";
+      if (/\b(not good|sad|upset|lonely|angry)\b/i.test(text) || /\bfeel bad\b/i.test(text)) return "low";
+      if (/\b(tired|sleepy|exhausted)\b/i.test(text)) return "tired";
+      if (/\bhungry\b/i.test(text)) return "hungry";
+      if (/\bbored\b/i.test(text)) return "bored";
+      if (/\b(nervous|worried|anxious)\b/i.test(text)) return "nervous";
+      if (/\bbusy\b/i.test(text)) return "busy";
+      if (/\b(happy|excited|glad)\b/i.test(text)) return "happy";
+      if (/\b(fine|good|okay|ok|great|alright)\b/i.test(text)) return "good";
+      return null;
+    }
+
+    function replyFeeling(original, text) {
+      const mood = moodOf(text);
+      if (!mood) return null;
+      const leadMood = /\bi(?:'m| am| feel| felt)\s+(?:a little |so |very |really |pretty |kind of )?(?:not bad|not good|tired|sleepy|exhausted|hungry|bored|nervous|worried|anxious|busy|happy|excited|glad|sad|upset|lonely|angry|fine|okay|alright|great|ok|good(?!\s+at))\b/i.test(text);
+      const shortMood = wordCount(text) <= 4 && !/\bgood at\b/i.test(text) && /^(i\b|i'm\b|im\b|so\b|very\b|really\b|pretty\b|a little\b|not\b|tired|sleepy|hungry|bored|busy|happy|sad|nervous|fine|good|okay|ok|great)/i.test(text);
+      const asksBack = /how are you|how about you|\band you\b/i.test(text);
+      if (!leadMood && !shortMood && !(asksBack && wordCount(text) <= 8)) return null;
+      const lines = {
+        tired: ["Rest matters. Did you sleep late, or was today just long?", "쉬는 것도 중요해. 늦게 잤어, 아니면 오늘이 길었어?"],
+        hungry: ["Then food is the right topic. What do you want to eat?", "그럼 음식 이야기가 맞겠다. 뭐가 먹고 싶어?"],
+        bored: ["Then let's make this less boring. Pick a topic you actually like.", "그럼 이 대화를 덜 심심하게 만들자. 진짜 관심 있는 주제를 골라 봐."],
+        nervous: ["We can go slowly. What's on your mind?", "천천히 해도 돼. 무슨 생각이 들어?"],
+        busy: ["Busy days pile up. What are you in the middle of?", "바쁜 날은 쌓이지. 지금 무엇 하는 중이야?"],
+        happy: ["I can hear the good energy. What made it that way?", "좋은 기운이 느껴져. 뭐가 그렇게 만들었어?"],
+        low: ["I'm glad you said it plainly. Do you want to talk about what happened?", "솔직하게 말해 줘서 좋아. 무슨 일이었는지 이야기할래?"],
+        good: ["Good to hear. What was one small good thing today?", "다행이네. 오늘 작지만 좋았던 일 하나만 말해 줘."]
+      };
+      let [en, ko] = lines[mood];
+      if (/how are you|how about you|and you/i.test(text)) {
+        en = `I'm good — calm and curious. ${en}`;
+      }
+      return pack(en, ko, {
+        simple: en,
+        expect: "detail",
+        suggestions: [
+          { text: "I slept late last night.", send: true },
+          { text: "I had a good meal.", send: true },
+          { text: "Nothing special happened.", send: true }
+        ]
+      });
+    }
+
+    function replyYesNo(original, text) {
+      if (/^(yes|yeah|yep|yup|sure|of course|okay|ok)( please| i do| i would)?[.!]*$/i.test(text)) {
+        if (state.topic === "cafe") {
+          return pack("Great. Anything to eat with that, or is the drink enough?", "좋아요. 같이 드실 게 있을까요, 음료면 충분할까요?", {
+            suggestions: [
+              { text: "I'll take a slice of cake too.", send: true },
+              { text: "The drink is enough, thanks.", send: true }
+            ]
+          });
+        }
+        return choose("yes", [
+          pack("Yes is a start. Give me one detail so I can see it.", "응은 시작이야. 내가 그려 볼 수 있게 자세히 하나만 말해 줘."),
+          pack("Okay. What happened next?", "좋아. 그다음엔 무슨 일이 있었어?"),
+          pack("I'm with you. Say it in a full sentence if you can.", "알겠어. 가능하면 완전한 문장으로 말해 봐.")
+        ]);
+      }
+      if (/^(no|nope|nah|not really|no thanks)[.!]*$/i.test(text)) {
+        if (state.topic === "cafe") {
+          return pack("No problem. We can just talk at the table. How is your day going?", "괜찮아요. 테이블에서 그냥 이야기해도 돼요. 오늘 하루는 어때요?", {
+            suggestions: feelingSuggestions()
+          });
+        }
+        return choose("no", [
+          pack("That's fine. Tell me something you do want to talk about.", "괜찮아. 대신 이야기하고 싶은 걸 말해 줘."),
+          pack("No is a complete answer. Want a different question?", "아니어도 충분한 대답이야. 다른 질문을 할까?", {
+            suggestions: [{ text: "Ask me some questions.", send: true }, { text: "Let's talk about food.", send: true }]
+          })
+        ]);
+      }
+      return null;
+    }
+
+    function replyCafe(original, text) {
+      if (state.topic !== "cafe") return null;
+      if (/recommend|popular|what's good|what do you have|menu/i.test(text)) {
+        return pack("If you want something gentle, the oat latte is smooth. If you want a small treat, the lemon cake is bright. Which way are you leaning?", "부드러운 걸 원하면 오트 라떼, 작은 디저트면 레몬 케이크가 좋아요. 어느쪽으로 기울어요?", {
+          suggestions: [
+            { text: "I'll try the oat latte.", send: true },
+            { text: "The lemon cake, please.", send: true }
+          ]
+        });
+      }
+      if (/\b(for here|to go|takeaway|take away|stay in)\b/i.test(text)) {
+        return pack("Perfect. Can I get a name for the order?", "알겠습니다. 주문 이름을 알려 주시겠어요?", {
+          expect: "name",
+          suggestions: [{ text: "My name is ", send: false }, { text: "The name is Sam.", send: true }]
+        });
+      }
+      if (/^(no|nope|nothing else|that's all|that is all)\b/i.test(text)) {
+        return pack("All set, then. Want to keep chatting while you wait?", "그럼 주문은 여기까지요. 기다리는 동안 이야기할까요?", {
+          suggestions: [
+            { text: "Yes. How is your day?", send: true },
+            { text: "No thanks. That's all.", send: true }
+          ]
+        });
+      }
+      const item = text.match(/\b(latte|americano|cappuccino|coffee|tea|green tea|cake|cookie|muffin|sandwich|water|juice|hot chocolate)\b/i);
+      if (item || /\bi(?:'d| would) like\b|\bi'll (?:take|have)\b|\bcan i (?:get|have)\b/i.test(text)) {
+        const name = item ? item[1].toLowerCase() : "";
+        const label = name === "water" ? "A glass of water" : name ? name.charAt(0).toUpperCase() + name.slice(1) : "That";
+        return pack(`${label}, got it. For here or to go?`, `${label === "That" ? "그거" : label}, 알겠어요. 매장에서 드실까요, 가져가실까요?`, {
+          suggestions: [
+            { text: "For here, please.", send: true },
+            { text: "To go, please.", send: true }
+          ]
+        });
+      }
+      return null;
+    }
+
+    function replyStory(original, text) {
+      let match = text.match(/\b(breakfast|lunch|dinner|snack)\b/i);
+      if (match && !/\b(don't|do not)\b/i.test(text)) {
+        const meal = match[1].toLowerCase();
+        return pack(`${meal.charAt(0).toUpperCase() + meal.slice(1)} says a lot about a day. What do you usually have, and would you eat it again?`, `${meal}만 봐도 하루가 보여. 보통 뭘 먹고, 또 먹을 만해?`, {
+          suggestions: [
+            { text: `I usually have rice and soup for ${meal}.`, send: true },
+            { text: "I skip it sometimes.", send: true }
+          ]
+        });
+      }
+      match = text.match(/\b(?:go to|visit|went to|travel to|been to)\s+([a-z][^!.?]{1,40})/i);
+      if (match) {
+        const place = titleName(cleanPlace(match[1]));
+        if (place) {
+          const past = /\b(went|been|visited)\b/i.test(text);
+          state.lastSubject = place;
+          return pack(
+            past ? `${place} stayed in your story. What do you still remember?` : `${place} is a vivid choice. What is the first thing you want to do there?`,
+            past ? `${place} 이야기가 남았네. 아직 기억나는 건 뭐야?` : `${place} 가고 싶구나. 거기 가서 제일 먼저 뭘 하고 싶어?`,
+            {
+              suggestions: [
+                { text: past ? `I remember the food in ${place}.` : `I want to walk around ${place}.`, send: true },
+                { text: "I want to try the local food.", send: true }
+              ]
+            }
+          );
+        }
+      }
+      if (/\b(homework|exam|test|presentation|project|meeting)\b/i.test(text)) {
+        return pack("That's a real deadline. When is it, and how ready do you feel?", "기한이 있는 일이구나. 언제고, 준비는 얼마나 된 것 같아?", {
+          suggestions: [
+            { text: "It's tomorrow, and I'm nervous.", send: true },
+            { text: "I feel ready.", send: true },
+            { text: "I haven't started.", send: true }
+          ]
+        });
+      }
+      if (/\b(this weekend|on the weekend|next weekend)\b/i.test(text)) {
+        return pack("Weekends get away fast. What is one plan, even a small one?", "주말은 금방 가. 작은 계획이어도 하나만 말해 줘.", {
+          suggestions: [
+            { text: "I might meet a friend.", send: true },
+            { text: "I want to rest.", send: true }
+          ]
+        });
+      }
+      if (/\b(movie|film|drama|series|netflix)\b/i.test(text)) {
+        return pack("What are you watching these days, and would you recommend it?", "요즘 뭘 보고 있어? 나한테도 추천할 만해?", {
+          suggestions: [
+            { text: "I'm watching a short series.", send: true },
+            { text: "I don't watch much.", send: true }
+          ]
+        });
+      }
+      if (/\b(music|song|playlist)\b/i.test(text) && !/^do you\b/i.test(text)) {
+        return pack("Music is an easy conversation. What do you play when you want to feel better?", "음악은 이야기하기 쉽지. 기분이 좋아지고 싶을 때 뭘 틀어?", {
+          suggestions: [
+            { text: "I play quiet songs.", send: true },
+            { text: "I like loud music.", send: true }
+          ]
+        });
+      }
+      match = text.match(/\bmy (friend|mom|dad|mother|father|sister|brother|family|parents|girlfriend|boyfriend|partner)\b/i);
+      if (match) {
+        return pack(`Tell me one true thing about your ${match[1]}. What are they like?`, `네 ${match[1]}에 대해 사실 하나만 말해 줘. 어떤 사람이야?`);
+      }
+      if (/\b(it's|it is) (really |so |very )?(sunny|rainy|raining|snowing|cold|hot|windy|cloudy)\b/i.test(text) || /\b(sunny|rainy|snowing|windy) today\b/i.test(text)) {
+        return pack("Weather changes the shape of a day. Are you going outside?", "날씨가 하루 모양을 바꾸지. 밖에 나갈 거야?", {
+          suggestions: [
+            { text: "I'll stay inside.", send: true },
+            { text: "I might go for a walk.", send: true }
+          ]
+        });
+      }
+      if (/\b(coffee|latte|tea)\b/i.test(text)) {
+        if (/\bprefer tea\b|\btea person\b/i.test(text)) {
+          return pack("Tea it is. Do you drink it hot, or iced?", "차구나. 뜨겁게 마셔, 차갑게 마셔?");
+        }
+        if (/\bcoffee person\b/i.test(text)) {
+          return pack("Coffee it is. Is that a morning cup, or an all-day habit?", "커피구나. 아침에만 마셔, 아니면 하루 종일?");
+        }
+        return pack("A warm drink makes a conversation easier. Are you a coffee person or a tea person?", "따뜻한 음료가 있으면 대화가 쉬워져. 커피파야, 차파야?", {
+          suggestions: [
+            { text: "I'm a coffee person.", send: true },
+            { text: "I prefer tea.", send: true }
+          ]
+        });
+      }
+      if (/\bwoke up\b|\bgot up\b|\bslept late\b/i.test(text)) {
+        return pack("That's when the day opened. What did you do next?", "하루가 그때 시작됐구나. 그다음엔 뭘 했어?");
+      }
+      if (/\b(slow day|long day|normal day)\b/i.test(text)) {
+        return pack("Those days still have one scene worth telling. What was the quietest moment?", "그런 하루에도 말할 장면은 하나 있어. 가장 조용했던 순간은 언제야?");
+      }
+      if (/\bhaven't eaten\b|\bhave not eaten\b|\bnot eaten yet\b/i.test(text)) {
+        return pack("Then you're still deciding. What sounds good right now?", "아직 고르는 중이구나. 지금 뭐가 먹고 싶어?");
+      }
+      if (/\bno plan\b/i.test(text)) {
+        return pack("No plan can be a relief. If one small thing appears, what do you hope it is?", "계획 없는 것도 숨 돌리기야. 작은 일 하나가 생긴다면 뭐였으면 좋겠어?");
+      }
+      if (/\bsleep in\b/i.test(text)) {
+        return pack("Sleeping in is a real plan. What time do you hope to wake up?", "늦잠도 계획이야. 몇 시에 깨고 싶어?");
+      }
+      if (/\bi skip\b/i.test(text)) {
+        return pack("Skipping is information too. Is that a habit, or just today?", "거르는 것도 정보야. 습관이야, 아니면 오늘만 그래?");
+      }
+      if (/\bi play\b/i.test(text) && !/\b(song|songs|music)\b/i.test(text)) {
+        return pack("Playing counts. What do you play, and do you do it alone or with someone?", "그것도 취미야. 뭘 하고, 혼자 해 아니면 같이 해?");
+      }
+      if (/\bdon't have a hobby\b|\bdo not have a hobby\b/i.test(text)) {
+        return pack("That's okay. What do you do in a free half hour, even if nobody calls it a hobby?", "그래도 괜찮아. 자유 시간 삼십 분에 뭘 해? 취미가 아니어도 돼.");
+      }
+      if (/\bmeal\b/i.test(text)) {
+        return pack("A good meal can rescue a day. What was on the plate?", "맛있는 한 끼가 하루를 살리기도 해. 접시에 뭐가 있었어?");
+      }
+      if (/^something spicy[.!]*$/i.test(text)) {
+        return pack("Spicy is a whole mood. How hot do you like it — mild, medium, or very hot?", "매운 게 오늘의 기분이구나. 약간, 중간, 아주 매운 것 중에 어디야?");
+      }
+      if (/\brather not say\b|\bdon't want to say\b/i.test(text)) {
+        return pack("That's completely fine. We'll leave it out. What do you feel like talking about?", "안 말해도 전혀 괜찮아. 그건 넘어가자. 무슨 이야기가 하고 싶어?");
+      }
+      if (/\bfeel ready\b|\bi(?:'m| am) ready\b/i.test(text)) {
+        return pack("That's a good place to stand. What did you do to get ready?", "준비된 느낌이 좋네. 뭘 해서 그렇게 됐어?");
+      }
+      if (/\bhaven't started\b|\bhave not started\b/i.test(text)) {
+        return pack("Starting is the hard step. What is the first tiny piece?", "시작이 가장 어렵지. 가장 작은 첫 조각은 뭐야?");
+      }
+      if (/\bmeet a friend\b|\bsaw a friend\b|\bsee a friend\b/i.test(text)) {
+        return pack("Friends make a day easier to describe. What did you do together, or what will you do?", "친구가 있으면 하루를 말하기 쉬워. 같이 뭘 했어, 아니면 뭘 할 거야?");
+      }
+      if (/\b(day was busy|been busy)\b/i.test(text)) {
+        return pack("Busy days pile up. What are you in the middle of?", "바쁜 날은 쌓이지. 지금 무엇 하는 중이야?");
+      }
+      if (/\bit(?:'s| is) (quiet|busy|crowded|nice|loud)\b/i.test(text)) {
+        return pack("That's a useful picture. What do people do there?", "장소가 그려져. 거기 사람들은 뭘 해?");
+      }
+      return null;
+    }
+
+    function replyBecause(original, text) {
+      if (!/\bbecause\b/i.test(text)) return null;
+      return pack("That's a clear reason. Can you give one example?", "이유가 분명하네. 예를 하나만 들어 줄래?", {
+        suggestions: [{ text: "For example, last week I felt the same way.", send: true }]
+      });
+    }
+
+    function replySmallTalk(original, text) {
+      if (!/\b(nothing special|not much|same as usual|i don't know|idk|no idea)\b/i.test(text)) return null;
+      return choose("idk", [
+        pack("That's allowed. Pick an easy lane: food, a person, or a place.", "그래도 괜찮아. 음식, 사람, 장소 중에 쉬운 걸 골라 봐.", {
+          suggestions: [
+            { text: "Let's talk about food.", send: true },
+            { text: "I saw a friend today.", send: true }
+          ]
+        }),
+        pack('Then borrow my sentence and change the ending: "Today I feel ____."', '그럼 이 문장을 빌려서 끝만 바꿔 봐. "Today I feel ____."', {
+          suggestions: [
+            { text: "Today I feel tired but okay.", send: true },
+            { text: "Today I feel curious.", send: true }
+          ]
+        })
+      ]);
+    }
+
+    function replyFallback(original, text) {
+      const bit = text.length > 90 ? `${text.slice(0, 87)}…` : text;
+      const pool = [
+        pack(`I follow you. You said, "${bit}" Can you add one detail — when, where, or who?`, "이해했어. 언제, 어디서, 누구인지 하나만 더 말해 줄래?"),
+        pack("That's worth talking about. What happened next?", "이야기할 만하다. 그다음엔 무슨 일이 있었어?"),
+        pack("Thanks for sharing that. How did you feel?", "말해 줘서 고마워. 기분은 어땠어?"),
+        pack("I'm curious. Why does that matter to you?", "궁금해. 그게 너에게 왜 중요해?")
+      ];
+      if (state.topic !== "free" && state.turns % 2 === 0) {
+        const follow = {
+          daily: pack("Bring me back to today. What is one thing you still have to do?", "다시 오늘로 와 보자. 아직 해야 하는 일 하나만 뭐야?"),
+          food: pack("Stay with food for a second. Sweet, salty, or spicy — which mood is yours?", "음식에 조금만 더 머물자. 단맛, 짠맛, 매운맛 중에 오늘 기분은 뭐야?"),
+          hobby: pack("What hobby would you try for one hour if it cost nothing?", "돈이 안 든다면 한 시간 해보고 싶은 취미는 뭐야?"),
+          travel: pack("If you left tomorrow with one small bag, where would you go?", "내일 작은 가방 하나로 떠난다면 어디로 가?"),
+          weekend: pack("Who, if anyone, is part of your weekend?", "주말에 같이 있는 사람이 있어?"),
+          school: pack("What is the hardest part of school or work this week?", "이번 주 학교나 일에서 가장 힘든 부분은 뭐야?"),
+          cafe: pack("We can stay in the café scene. Hot drink, or something sweet?", "카페 상황을 이어가도 좋아요. 따뜻한 음료와 디저트 중에 뭐가 좋아요?", {
+            suggestions: [
+              { text: "A hot latte, please.", send: true },
+              { text: "Something sweet.", send: true },
+              { text: "Let's just talk.", send: true }
+            ]
+          })
+        };
+        if (follow[state.topic]) return follow[state.topic];
+      }
+      return choose("fallback", pool);
+    }
+
+    function buildReply(original, text) {
+      const steps = [
+        replyLaughter,
+        replyPardon,
+        replyGoodbye,
+        replyThanks,
+        replyHowToSay,
+        replyCorrectRequest,
+        replyTopicSwitch,
+        replySomethingElse,
+        replyJustTalk,
+        replyStartQuiz,
+        replyRepeatQuiz,
+        replyQuizStep,
+        replyKorean,
+        replyToBot,
+        replyPersonal,
+        replyGreeting,
+        replyMeet,
+        replyYesNo,
+        replyFeeling,
+        replyCafe,
+        replyStory,
+        replyBecause,
+        replySmallTalk
+      ];
+      for (const step of steps) {
+        const hit = step(original, text);
+        if (hit) return hit;
+      }
+      return replyFallback(original, text);
+    }
+
+    function pickOpener(id) {
+      const topic = TOPICS[id] || TOPICS.free;
+      const list = typeof topic.openers === "function" ? topic.openers() : topic.openers;
+      return cloneReply(choose(`open-${id}`, list));
+    }
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+
+    function scrollLog() {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      log.scrollTo({ top: log.scrollHeight, behavior: reduce ? "auto" : "smooth" });
+    }
+
+    function renderStats() {
+      statsEl.textContent = `말한 단어 ${state.words} · ${state.turns}번`;
+    }
+
+    function renderSuggestions(items) {
+      suggest.replaceChildren();
+      (items || []).forEach((item) => {
+        const button = el("button", "chip", item.text);
+        button.type = "button";
+        button.addEventListener("click", () => {
+          if (item.send === false) {
+            input.value = item.text;
+            autosize();
+            input.focus();
+            return;
+          }
+          if (state.busy) return;
+          input.value = "";
+          autosize();
+          handleUser(item.text);
+        });
+        suggest.appendChild(button);
+      });
+    }
+
+    function addUser(text, correction) {
+      const row = el("div", "row user");
+      const stack = el("div", "stack");
+      stack.appendChild(el("div", "bubble", null)).appendChild(el("p", null, text));
+      const bubble = stack.querySelector(".bubble");
+      bubble.replaceChildren(el("p", null, text));
+      if (correction) {
+        const card = el("div", "fix");
+        card.appendChild(el("div", "fix-title", "더 자연스럽게"));
+        card.appendChild(el("p", "better", correction.better));
+        correction.tips.forEach((tip) => card.appendChild(el("p", "tip", tip)));
+        stack.appendChild(card);
+      }
+      row.appendChild(stack);
+      log.appendChild(row);
+    }
+
+    function addBot(raw) {
+      const reply = cloneReply(raw);
+      reply.en = fill(reply.en);
+      reply.ko = fill(reply.ko);
+      reply.simple = fill(reply.simple || reply.en);
+      reply.suggestions = reply.suggestions.map((item) => ({ ...item, text: fill(item.text) }));
+      state.lastEn = reply.en;
+      state.lastSimple = reply.simple;
+      state.lastSuggestions = reply.suggestions;
+      state.expect = reply.expect || "free";
+      state.history.push({ role: "assistant", content: reply.en });
+      if (state.history.length > 20) state.history.splice(0, state.history.length - 20);
+
+      const row = el("div", "row bot");
+      const avatar = el("div", "avatar", "M");
+      avatar.setAttribute("aria-hidden", "true");
+      const stack = el("div", "stack");
+      const bubble = el("div", "bubble");
+      bubble.appendChild(el("p", null, reply.en));
+      if (reply.simple && reply.simple !== reply.en) bubble.appendChild(el("p", "simple", reply.simple));
+      if (reply.ko) bubble.appendChild(el("p", "hint", reply.ko));
+      const speakBtn = el("button", "speak", "▶");
+      speakBtn.type = "button";
+      speakBtn.setAttribute("aria-label", "영어로 다시 듣기");
+      speakBtn.addEventListener("click", () => speak(reply.en, 0.92));
+      bubble.appendChild(speakBtn);
+      stack.appendChild(bubble);
+      row.append(avatar, stack);
+      log.appendChild(row);
+      renderSuggestions(reply.suggestions);
+      scrollLog();
+      if (state.voice) speak(reply.en, state.slow ? 0.78 : undefined);
+      state.slow = false;
+    }
+
+    function showPending() {
+      const row = el("div", "row bot pending");
+      const avatar = el("div", "avatar", "M");
+      avatar.setAttribute("aria-hidden", "true");
+      const bubble = el("div", "bubble");
+      bubble.appendChild(el("p", null, "생각 중…"));
+      row.append(avatar, bubble);
+      log.appendChild(row);
+      scrollLog();
+      return row;
+    }
+
+    function rememberName(text) {
+      let match = text.match(/\bmy name is\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)/i);
+      if (!match) match = text.match(/\b(?:the name is|i'm called|call me)\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)/i);
+      if (!match) match = text.match(/\b(?:i'm|i am)\s+([a-z][a-z'-]{1,20}(?:\s+[a-z][a-z'-]{1,20})?)[.!,]*$/i);
+      if (match && okName(match[1])) state.name = titleName(match[1]);
+    }
+
+    async function askMina() {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: state.history.slice(-16),
+          topic: state.topic,
+          level: state.level,
+          name: state.name
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.en) throw new Error(data.error || "응답을 받지 못했어요.");
+      const suggestions = (data.suggestions || [])
+        .map((item) => String(item).trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .map((item) => ({ text: item, send: true }));
+      return pack(data.en, data.ko || "", {
+        simple: data.simple || "",
+        suggestions: suggestions.length ? suggestions : DEFAULT_SUGGESTIONS
+      });
+    }
+
+    async function handleUser(raw) {
+      const text = raw.trim().replace(/\s+/g, " ");
+      if (!text || state.busy) return;
+      state.busy = true;
+      input.disabled = true;
+      const correction = buildCorrection(text);
+      const usable = correction ? correction.better : text;
+      addUser(text, correction);
+      rememberName(usable);
+      state.history.push({ role: "user", content: text });
+      state.turns += 1;
+      state.words += countWords(text);
+      renderStats();
+      const pending = showPending();
+      let rawReply;
+      try {
+        if (!state.api) throw new Error("local");
+        rawReply = await askMina();
+        status.textContent = state.provider === "openrouter" ? "OpenRouter에 연결됨" : "연결됨";
+      } catch (error) {
+        if (state.api && error.message !== "local") status.textContent = error.message;
+        rawReply = buildReply(text, usable);
+      } finally {
+        pending.remove();
+      }
+      const reply = cloneReply(rawReply);
+      if (!/^bye\b/i.test(reply.en) && state.turns === 5) reply.en += " Five turns already — you are doing real practice.";
+      if (!/^bye\b/i.test(reply.en) && state.turns === 10) reply.en += " Ten turns. If you want, tell me a longer story.";
+      addBot(reply);
+      save();
+      state.busy = false;
+      input.disabled = false;
+      autosize();
+      input.focus();
+    }
+
+    function markTopic() {
+      document.querySelectorAll("[data-topic]").forEach((button) => {
+        const active = button.dataset.topic === state.topic;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+        if (active) button.scrollIntoView({ inline: "nearest", block: "nearest" });
+      });
+    }
+
+    function renderTopics() {
+      topicList.replaceChildren();
+      Object.keys(TOPICS).forEach((id) => {
+        const topic = TOPICS[id];
+        const button = el("button", "topic");
+        button.type = "button";
+        button.dataset.topic = id;
+        button.append(el("span", null, topic.label), el("small", null, topic.en));
+        button.addEventListener("click", () => {
+          state.topic = id;
+          state.quiz = false;
+          markTopic();
+          addBot(pickOpener(id));
+          save();
+        });
+        topicList.appendChild(button);
+      });
+      markTopic();
+    }
+
+    function syncControls() {
+      hintsEl.checked = state.hints;
+      voiceEl.checked = state.voice;
+      log.classList.toggle("beginner", state.level === "beginner");
+      log.classList.toggle("hide-hints", !state.hints);
+      document.querySelectorAll("[data-level]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.level === state.level);
+      });
+      markTopic();
+      renderStats();
+    }
+
+    function save() {
+      const data = {
+        level: state.level,
+        topic: state.topic,
+        hints: state.hints,
+        voice: state.voice,
+        name: state.name,
+        from: state.from,
+        likes: state.likes
+      };
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (error) { /* ignore */ }
+    }
+
+    function load() {
+      try {
+        const data = JSON.parse(localStorage.getItem(KEY) || "null");
+        if (!data) return;
+        if (data.level === "beginner" || data.level === "intermediate") state.level = data.level;
+        if (TOPICS[data.topic]) state.topic = data.topic;
+        if (typeof data.hints === "boolean") state.hints = data.hints;
+        if (typeof data.voice === "boolean") state.voice = data.voice;
+        if (typeof data.name === "string") state.name = data.name;
+        if (typeof data.from === "string") state.from = data.from;
+        if (Array.isArray(data.likes)) state.likes = data.likes.slice(0, 6);
+      } catch (error) { /* ignore */ }
+    }
+
+    function pickVoice() {
+      const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+      return voices.find((voice) => /en-US/i.test(voice.lang) && /aria|jenny|samantha|google/i.test(voice.name))
+        || voices.find((voice) => /en-US|en_GB/i.test(voice.lang))
+        || null;
+    }
+
+    function speak(text, rate) {
+      if (!window.speechSynthesis || !text) return;
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      utterance.rate = rate || (state.level === "beginner" ? 0.92 : 1);
+      const voice = pickVoice();
+      if (voice) utterance.voice = voice;
+      speechSynthesis.speak(utterance);
+    }
+
+    function setupSpeech() {
+      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Speech) {
+        mic.disabled = true;
+        mic.title = "이 브라우저는 음성 인식을 지원하지 않아요. Chrome을 써 보세요.";
+        return;
+      }
+      recognition = new Speech();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.onresult = (event) => {
+        let said = "";
+        let interim = false;
+        for (let i = 0; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          said += result[0].transcript;
+          if (!result.isFinal) interim = true;
+        }
+        input.value = said;
+        autosize();
+        if (!interim && said.trim() && !state.busy) {
+          input.value = "";
+          autosize();
+          handleUser(said.trim());
+        }
+      };
+      recognition.onend = () => {
+        listening = false;
+        mic.classList.remove("on");
+        mic.setAttribute("aria-pressed", "false");
+      };
+      recognition.onerror = () => {
+        listening = false;
+        mic.classList.remove("on");
+        mic.setAttribute("aria-pressed", "false");
+        status.textContent = "마이크를 쓸 수 없어요. 영어로 직접 입력해 주세요.";
+      };
+      if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
+    }
+
+    function autosize() {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+      send.disabled = !input.value.trim();
+    }
+
+    function resetConversation() {
+      state.name = "";
+      state.from = "";
+      state.likes = [];
+      state.quiz = false;
+      state.quizAt = 0;
+      state.turns = 0;
+      state.words = 0;
+      state.used = {};
+      state.topic = "free";
+      state.lastEn = "";
+      state.lastSimple = "";
+      state.lastSuggestions = [];
+      state.lastSubject = "";
+      state.history = [];
+      state.busy = false;
+      log.replaceChildren();
+      status.textContent = "";
+      save();
+      syncControls();
+      addBot(pickOpener("free"));
+      input.focus();
+    }
+
+    function bindEvents() {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (state.busy) return;
+        const value = input.value;
+        input.value = "";
+        autosize();
+        handleUser(value);
+      });
+      input.addEventListener("input", autosize);
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          form.requestSubmit();
+        }
+      });
+      document.querySelectorAll("[data-level]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.level = button.dataset.level;
+          syncControls();
+          save();
+        });
+      });
+      hintsEl.addEventListener("change", () => {
+        state.hints = hintsEl.checked;
+        log.classList.toggle("hide-hints", !state.hints);
+        save();
+      });
+      voiceEl.addEventListener("change", () => {
+        state.voice = voiceEl.checked;
+        if (!state.voice && window.speechSynthesis) speechSynthesis.cancel();
+        save();
+      });
+      mic.addEventListener("click", () => {
+        if (!recognition) {
+          status.textContent = "이 브라우저는 음성 인식을 지원하지 않아요. Chrome에서 열어 보세요.";
+          return;
+        }
+        if (listening) {
+          recognition.stop();
+          return;
+        }
+        try {
+          recognition.start();
+          listening = true;
+          mic.classList.add("on");
+          mic.setAttribute("aria-pressed", "true");
+          status.textContent = "듣는 중… 영어로 말해 보세요.";
+        } catch (error) {
+          status.textContent = "마이크를 시작하지 못했어요.";
+        }
+      });
+      resetBtn.addEventListener("click", () => {
+        if (!resetArmed) {
+          resetArmed = true;
+          resetBtn.textContent = "한 번 더 누르면 지워집니다";
+          setTimeout(() => {
+            resetArmed = false;
+            resetBtn.textContent = "대화 다시 시작";
+          }, 2500);
+          return;
+        }
+        resetArmed = false;
+        resetBtn.textContent = "대화 다시 시작";
+        resetConversation();
+      });
+    }
+
+    async function connectApi() {
+      try {
+        const response = await fetch("/api/health");
+        const data = await response.json();
+        state.api = !!data.ok;
+        state.provider = data.provider || "";
+        status.textContent = data.ok
+          ? (data.provider === "openrouter" ? "OpenRouter에 연결됨" : "연결됨")
+          : (data.error || "API 키를 찾지 못했어요.");
+      } catch (error) {
+        state.api = false;
+        if (location.protocol === "file:") {
+          status.textContent = "키를 쓰려면 터미널에서 node server.js 를 실행한 뒤 http://127.0.0.1:8787 로 여세요.";
+        }
+      }
+    }
+
+    load();
+    renderTopics();
+    syncControls();
+    setupSpeech();
+    bindEvents();
+    addBot(pickOpener(state.topic));
+    connectApi();
+    input.focus();
+  </script>
+</body>
+</html>
